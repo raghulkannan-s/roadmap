@@ -51,5 +51,5 @@ coverage/
 # Misc
 *.log
 
+# Context & rules
 CONTEXT.md
-AGENTS.md
