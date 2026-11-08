@@ -75,3 +75,4 @@ export function SavedItemCard({ item, type, onDelete }: SavedItemCardProps) {
     </div>
   );
 }
+

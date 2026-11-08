@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { FolderKanban, Plus } from "lucide-react";
 
 import { SavedItemCard } from "./saved-item-card";
@@ -14,6 +15,7 @@ interface SavedItemsListProps {
 }
 
 export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
+  const { data: session } = useSession();
   const roadmaps = useRoadmaps();
   const todos = useTodos();
   const [filter, setFilter] = useState<FilterTab>("all");
@@ -24,6 +26,11 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
     } else {
       deleteTodo(id);
     }
+
+    if (session?.user) {
+      const endpoint = type === "roadmap" ? `/api/roadmaps/${id}` : `/api/todos/${id}`;
+      fetch(endpoint, { method: "DELETE" }).catch(() => {});
+    }
   };
 
   const totalCount = roadmaps.length + todos.length;
@@ -33,7 +40,11 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-gray-900">Saved Plans</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Stored locally in your browser</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {session?.user
+              ? "Synced with Neon Database & cached locally"
+              : "Stored locally in your browser"}
+          </p>
         </div>
 
         <div className="flex items-center gap-1.5 self-start sm:self-auto rounded-lg border border-gray-200 bg-gray-50 p-1 text-xs font-medium">

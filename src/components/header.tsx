@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Sparkles, Map } from "lucide-react";
 
+import { AuthButton } from "./auth-button";
+
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
@@ -19,21 +21,23 @@ export function Header() {
           </div>
         </Link>
 
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav className="flex items-center gap-2 sm:gap-4">
           <Link
             href="/"
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             <Sparkles className="h-3.5 w-3.5" />
             <span>Generate</span>
           </Link>
           <a
             href="#saved-items"
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             <Map className="h-3.5 w-3.5" />
             <span>Saved Plans</span>
           </a>
+
+          <AuthButton />
         </nav>
       </div>
     </header>

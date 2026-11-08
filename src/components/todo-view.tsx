@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Save, RotateCcw, ArrowLeft, Check } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Save, RotateCcw, ArrowLeft, Check, Cloud } from "lucide-react";
 
 import { CategoryGroup } from "./category-group";
 import { ProgressBar } from "./progress-bar";
@@ -25,45 +26,75 @@ export function TodoView({
   onRegenerate,
   isRegenerating = false,
 }: TodoViewProps) {
+  const { data: session } = useSession();
   const [categories, setCategories] = useState<Category[]>(data.categories);
   const [currentId, setCurrentId] = useState<string | undefined>(data.id);
   const [isSaved, setIsSaved] = useState(Boolean(data.id));
+  const [isSaving, setIsSaving] = useState(false);
 
   const allTasks = categories.flatMap((cat) => cat.tasks);
   const overallProgress = calculateProgress(allTasks);
 
-  const handleToggleTask = (categoryId: string, taskId: string) => {
-    setCategories((prev) => {
-      const updated = prev.map((cat) =>
-        cat.id === categoryId
-          ? {
-              ...cat,
-              tasks: cat.tasks.map((t) =>
-                t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
-              ),
-            }
-          : cat
-      );
+  const handleToggleTask = async (categoryId: string, taskId: string) => {
+    const updated = categories.map((cat) =>
+      cat.id === categoryId
+        ? {
+            ...cat,
+            tasks: cat.tasks.map((t) =>
+              t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
+            ),
+          }
+        : cat
+    );
 
-      if (currentId) {
-        updateTodo(currentId, { categories: updated });
-      } else {
-        setIsSaved(false);
+    setCategories(updated);
+
+    if (currentId) {
+      updateTodo(currentId, { categories: updated });
+
+      if (session?.user) {
+        try {
+          await fetch(`/api/todos/${currentId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ categories: updated }),
+          });
+        } catch {
+          // Cloud sync failure handled silently (cached locally)
+        }
       }
-      return updated;
-    });
+    } else {
+      setIsSaved(false);
+    }
   };
 
-  const handleSave = () => {
-    if (currentId) {
-      updateTodo(currentId, { categories });
-      setIsSaved(true);
-      return;
+  const handleSave = async () => {
+    setIsSaving(true);
+    let targetId = currentId ?? generateId();
+
+    if (session?.user) {
+      try {
+        const res = await fetch("/api/todos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: data.title,
+            description: data.description,
+            categories,
+            prompt,
+          }),
+        });
+        const json = await res.json();
+        if (json.success && json.data?.id) {
+          targetId = json.data.id;
+        }
+      } catch {
+        // Fallback to local
+      }
     }
 
-    const newId = generateId();
     const todo: TodoList = {
-      id: newId,
+      id: targetId,
       title: data.title,
       description: data.description,
       categories,
@@ -72,8 +103,9 @@ export function TodoView({
     };
 
     saveTodo(todo);
-    setCurrentId(newId);
+    setCurrentId(targetId);
     setIsSaved(true);
+    setIsSaving(false);
   };
 
   return (
@@ -101,11 +133,20 @@ export function TodoView({
         <button
           type="button"
           onClick={handleSave}
-          disabled={isSaved}
+          disabled={isSaved || isSaving}
           className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isSaved ? <Check className="h-4 w-4 text-emerald-600" /> : <Save className="h-4 w-4" />}
-          {isSaved ? "Saved" : "Save Todo"}
+          {isSaved ? (
+            <Check className="h-4 w-4 text-emerald-600" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          <span>{isSaving ? "Saving..." : isSaved ? "Saved" : "Save Todo"}</span>
+          {session?.user && (
+            <span title="Cloud Sync enabled">
+              <Cloud className="h-3.5 w-3.5 text-blue-500 ml-1" />
+            </span>
+          )}
         </button>
         {onRegenerate && (
           <button

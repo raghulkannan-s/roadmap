@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Save, RotateCcw, ArrowLeft, Clock, Check } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Save, RotateCcw, ArrowLeft, Clock, Check, Cloud } from "lucide-react";
 
 import { PhaseCard } from "./phase-card";
 import { ProgressBar } from "./progress-bar";
@@ -25,46 +26,76 @@ export function RoadmapView({
   onRegenerate,
   isRegenerating = false,
 }: RoadmapViewProps) {
+  const { data: session } = useSession();
   const [phases, setPhases] = useState<Phase[]>(data.phases);
   const [currentId, setCurrentId] = useState<string | undefined>(data.id);
   const [isSaved, setIsSaved] = useState(Boolean(data.id));
+  const [isSaving, setIsSaving] = useState(false);
 
   const allMilestones = phases.flatMap((phase) => phase.milestones);
   const overallProgress = calculateProgress(allMilestones);
 
-  const handleToggleMilestone = (phaseId: string, milestoneId: string) => {
-    setPhases((prev) => {
-      const updated = prev.map((phase) =>
-        phase.id === phaseId
-          ? {
-              ...phase,
-              milestones: phase.milestones.map((m) =>
-                m.id === milestoneId ? { ...m, isCompleted: !m.isCompleted } : m
-              ),
-            }
-          : phase
-      );
+  const handleToggleMilestone = async (phaseId: string, milestoneId: string) => {
+    const updated = phases.map((phase) =>
+      phase.id === phaseId
+        ? {
+            ...phase,
+            milestones: phase.milestones.map((m) =>
+              m.id === milestoneId ? { ...m, isCompleted: !m.isCompleted } : m
+            ),
+          }
+        : phase
+    );
 
-      // If already saved, persist toggles directly to storage
-      if (currentId) {
-        updateRoadmap(currentId, { phases: updated });
-      } else {
-        setIsSaved(false);
+    setPhases(updated);
+
+    if (currentId) {
+      updateRoadmap(currentId, { phases: updated });
+
+      if (session?.user) {
+        try {
+          await fetch(`/api/roadmaps/${currentId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phases: updated }),
+          });
+        } catch {
+          // Cloud sync failure handled silently (cached locally)
+        }
       }
-      return updated;
-    });
+    } else {
+      setIsSaved(false);
+    }
   };
 
-  const handleSave = () => {
-    if (currentId) {
-      updateRoadmap(currentId, { phases });
-      setIsSaved(true);
-      return;
+  const handleSave = async () => {
+    setIsSaving(true);
+    let targetId = currentId ?? generateId();
+
+    if (session?.user) {
+      try {
+        const res = await fetch("/api/roadmaps", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: data.title,
+            description: data.description,
+            estimatedDuration: data.estimatedDuration,
+            phases,
+            prompt,
+          }),
+        });
+        const json = await res.json();
+        if (json.success && json.data?.id) {
+          targetId = json.data.id;
+        }
+      } catch {
+        // Fallback to local
+      }
     }
 
-    const newId = generateId();
     const roadmap: Roadmap = {
-      id: newId,
+      id: targetId,
       title: data.title,
       description: data.description,
       estimatedDuration: data.estimatedDuration,
@@ -74,8 +105,9 @@ export function RoadmapView({
     };
 
     saveRoadmap(roadmap);
-    setCurrentId(newId);
+    setCurrentId(targetId);
     setIsSaved(true);
+    setIsSaving(false);
   };
 
   return (
@@ -107,11 +139,20 @@ export function RoadmapView({
         <button
           type="button"
           onClick={handleSave}
-          disabled={isSaved}
+          disabled={isSaved || isSaving}
           className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isSaved ? <Check className="h-4 w-4 text-emerald-600" /> : <Save className="h-4 w-4" />}
-          {isSaved ? "Saved" : "Save Plan"}
+          {isSaved ? (
+            <Check className="h-4 w-4 text-emerald-600" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          <span>{isSaving ? "Saving..." : isSaved ? "Saved" : "Save Plan"}</span>
+          {session?.user && (
+            <span title="Cloud Sync enabled">
+              <Cloud className="h-3.5 w-3.5 text-blue-500 ml-1" />
+            </span>
+          )}
         </button>
         {onRegenerate && (
           <button
