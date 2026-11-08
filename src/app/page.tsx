@@ -33,9 +33,9 @@ export default function HomePage() {
         {isLoading ? (
           <div className="space-y-6">
             <div className="text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
+              <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50/80 px-3.5 py-1 text-xs font-semibold text-indigo-700 shadow-2xs dark:border-indigo-900/60 dark:bg-indigo-950/50 dark:text-indigo-300">
                 <Sparkles className="h-3.5 w-3.5 animate-spin" />
-                AI is crafting your {mode === "roadmap" ? "roadmap" : "todo list"}...
+                <span>Designing your custom {mode === "roadmap" ? "roadmap" : "todo list"}...</span>
               </span>
             </div>
             <LoadingSkeleton />
@@ -64,24 +64,27 @@ export default function HomePage() {
           <>
             {/* Hero & Prompt Section */}
             <section className="text-center space-y-3 pt-4 sm:pt-8">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50/70 px-3 py-1 text-xs font-medium text-blue-700">
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Powered by Gemini AI</span>
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/60 bg-indigo-50/60 px-3 py-1 text-xs font-medium text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
+                <span>AI Goal & Task Architect</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
-                Plan your goals with <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AI Intelligence</span>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Turn your goals into{" "}
+                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                  executable plans
+                </span>
               </h1>
-              <p className="mx-auto max-w-lg text-sm sm:text-base text-gray-500">
-                Type your goal or project idea. Get a phased roadmap or an organized, prioritized todo list in seconds.
+              <p className="mx-auto max-w-lg text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                Describe your target or project idea. Get a phased roadmap or an organized, prioritized task list in seconds.
               </p>
             </section>
 
             {error && (
-              <div className="mx-auto max-w-2xl flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/60 p-4 text-xs text-red-800">
-                <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+              <div className="mx-auto max-w-2xl flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/80 p-4 text-xs text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
+                <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <p className="font-semibold">Generation failed</p>
-                  <p className="mt-0.5 text-red-700">{error}</p>
+                  <p className="mt-0.5 text-rose-700 dark:text-rose-400">{error}</p>
                 </div>
               </div>
             )}

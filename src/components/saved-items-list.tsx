@@ -37,24 +37,26 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
 
   return (
     <section id="saved-items" className="w-full max-w-4xl mx-auto space-y-6 pt-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4 dark:border-slate-800/80">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-gray-900">Saved Plans</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Saved Plans</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {session?.user
               ? "Synced with Neon Database & cached locally"
               : "Stored locally in your browser"}
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 self-start sm:self-auto rounded-lg border border-gray-200 bg-gray-50 p-1 text-xs font-medium">
+        <div className="flex items-center gap-1.5 self-start sm:self-auto rounded-xl border border-slate-200/80 bg-slate-100/80 p-1 text-xs font-semibold dark:border-slate-800 dark:bg-slate-900/80">
           {(["all", "roadmap", "todo"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setFilter(tab)}
-              className={`rounded-md px-3 py-1 capitalize transition-all ${
-                filter === tab ? "bg-white text-gray-900 shadow-xs" : "text-gray-500 hover:text-gray-700"
+              className={`rounded-lg px-3 py-1 capitalize transition-all ${
+                filter === tab
+                  ? "bg-white text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               {tab === "all" ? `All (${totalCount})` : tab === "roadmap" ? `Roadmaps (${roadmaps.length})` : `Todos (${todos.length})`}
@@ -64,19 +66,19 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
       </div>
 
       {totalCount === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-10 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/40 p-10 text-center dark:border-slate-800 dark:bg-slate-900/30">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
             <FolderKanban className="h-6 w-6" />
           </div>
-          <h3 className="mt-3 text-sm font-semibold text-gray-900">No saved plans yet</h3>
-          <p className="mt-1 text-xs text-gray-500 max-w-xs">
+          <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-white">No saved plans yet</h3>
+          <p className="mt-1 text-xs text-slate-500 max-w-xs dark:text-slate-400">
             Generate your first roadmap or todo list using AI above and save it to track your progress.
           </p>
           {onNewPlanClick && (
             <button
               type="button"
               onClick={onNewPlanClick}
-              className="mt-4 flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700"
+              className="mt-4 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:opacity-95"
             >
               <Plus className="h-4 w-4" />
               <span>Create Plan</span>

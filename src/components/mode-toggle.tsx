@@ -13,34 +13,33 @@ interface ModeToggleProps {
 
 export function ModeToggle({ mode, onModeChange }: ModeToggleProps) {
   return (
-    <div className="flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+    <div className="flex rounded-xl border border-slate-200/90 bg-slate-100/80 p-1 shadow-inner dark:border-slate-800 dark:bg-slate-900/90">
       <button
         type="button"
         onClick={() => onModeChange("roadmap")}
         className={cn(
-          "flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all",
+          "flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all duration-150",
           mode === "roadmap"
-            ? "bg-white text-gray-900 shadow-sm"
-            : "text-gray-500 hover:text-gray-700"
+            ? "bg-white text-slate-900 shadow-xs dark:bg-slate-800 dark:text-white"
+            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
         )}
       >
-        <Map className="h-4 w-4" />
-        Roadmap
+        <Map className="h-3.5 w-3.5 text-indigo-500" />
+        <span>Roadmap</span>
       </button>
       <button
         type="button"
         onClick={() => onModeChange("todo")}
         className={cn(
-          "flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all",
+          "flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all duration-150",
           mode === "todo"
-            ? "bg-white text-gray-900 shadow-sm"
-            : "text-gray-500 hover:text-gray-700"
+            ? "bg-white text-slate-900 shadow-xs dark:bg-slate-800 dark:text-white"
+            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
         )}
       >
-        <CheckSquare className="h-4 w-4" />
-        Todo
+        <CheckSquare className="h-3.5 w-3.5 text-emerald-500" />
+        <span>Todo List</span>
       </button>
     </div>
   );
 }
-

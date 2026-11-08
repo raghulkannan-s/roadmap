@@ -84,3 +84,4 @@ model TodoList {
 
   @@index([userId])
 }
+

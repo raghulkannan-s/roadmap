@@ -8,13 +8,13 @@ export function AuthButton() {
   const { data: session, status } = useSession();
 
   if (status === "loading") {
-    return <div className="h-8 w-20 animate-pulse rounded-lg bg-gray-100" />;
+    return <div className="h-8 w-20 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />;
   }
 
   if (session?.user) {
     return (
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1 pl-1 pr-3 shadow-2xs">
+        <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 shadow-2xs transition-colors dark:border-slate-800 dark:bg-slate-900">
           {session.user.image ? (
             <Image
               src={session.user.image}
@@ -24,11 +24,11 @@ export function AuthButton() {
               className="rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
               <User className="h-3.5 w-3.5" />
             </div>
           )}
-          <span className="hidden text-xs font-medium text-gray-700 sm:inline-block max-w-[100px] truncate">
+          <span className="hidden text-xs font-medium text-slate-700 dark:text-slate-200 sm:inline-block max-w-[100px] truncate">
             {session.user.name ?? session.user.email}
           </span>
         </div>
@@ -36,7 +36,7 @@ export function AuthButton() {
         <button
           type="button"
           onClick={() => signOut()}
-          className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
+          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
           title="Sign out"
         >
           <LogOut className="h-3.5 w-3.5" />
@@ -50,7 +50,7 @@ export function AuthButton() {
     <button
       type="button"
       onClick={() => signIn("google")}
-      className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-2xs transition-all hover:border-gray-300 hover:bg-gray-50"
+      className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-all hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:border-slate-700"
     >
       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24">
         <path

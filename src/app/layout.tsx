@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { AuthProvider } from "@/components/auth-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import { GenerationProvider } from "@/context/generation-context";
 import { Header } from "@/components/header";
 
@@ -18,9 +19,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RoadmapAI — AI Roadmap & Todo Generator",
+  title: "RoadmapAI — Next-Gen AI Roadmap & Todo Studio",
   description:
-    "Generate structured, actionable project roadmaps and todo lists from your prompts using AI. Track your progress and save everything locally or sync to Neon DB.",
+    "Generate structured, actionable roadmaps and categorized todo lists using AI. Track your progress with interactive timelines, local persistence, and cloud sync.",
 };
 
 export default function RootLayout({
@@ -31,18 +32,21 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gray-50/40 text-gray-900 font-sans">
-        <AuthProvider>
-          <GenerationProvider>
-            <Header />
-            <div className="flex-1 flex flex-col">{children}</div>
-            <footer className="border-t border-gray-100 bg-white py-6 text-center text-xs text-gray-400">
-              <p>RoadmapAI — Plan your goals with AI. Supports Google OAuth & Neon Database.</p>
-            </footer>
-          </GenerationProvider>
-        </AuthProvider>
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-[#090d16] dark:text-slate-100 font-sans">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <GenerationProvider>
+              <Header />
+              <div className="flex-1 flex flex-col">{children}</div>
+              <footer className="border-t border-slate-200/70 bg-white/50 py-6 text-center text-xs text-slate-400 backdrop-blur-xs dark:border-slate-800/80 dark:bg-slate-950/40 dark:text-slate-500">
+                <p>RoadmapAI — Precision goal planning and execution studio.</p>
+              </footer>
+            </GenerationProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
