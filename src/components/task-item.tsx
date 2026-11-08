@@ -20,7 +20,7 @@ export function TaskItem({ task, onToggle }: TaskItemProps) {
         type="checkbox"
         checked={task.isCompleted}
         onChange={() => onToggle(task.id)}
-        className="mt-0.5 h-4 w-4 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:checked:bg-indigo-600"
+        className="mt-0.5 h-4 w-4 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:checked:bg-blue-600"
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -28,7 +28,7 @@ export function TaskItem({ task, onToggle }: TaskItemProps) {
             className={`text-sm font-medium transition-all ${
               task.isCompleted
                 ? "text-slate-400 line-through dark:text-slate-500"
-                : "text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+                : "text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400"
             }`}
           >
             {task.title}

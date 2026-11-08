@@ -19,7 +19,7 @@ export function CategoryGroup({ category, onToggleTask }: CategoryGroupProps) {
     <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-xs backdrop-blur-xs transition-all dark:border-slate-800/90 dark:bg-slate-900/70">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
             <FolderOpen className="h-4 w-4" />
           </div>
           <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -35,7 +35,7 @@ export function CategoryGroup({ category, onToggleTask }: CategoryGroupProps) {
       <div className="mt-3">
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
           <div
-            className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+            className="h-full rounded-full bg-blue-600 dark:bg-blue-500 transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>

@@ -24,7 +24,7 @@ export function AuthButton() {
               className="rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400">
               <User className="h-3.5 w-3.5" />
             </div>
           )}

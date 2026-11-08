@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Loader2, CornerDownLeft } from "lucide-react";
+import { useSession, signIn } from "next-auth/react";
+import { Sparkles, Loader2, CornerDownLeft, Lock } from "lucide-react";
 
 import { ModeToggle } from "./mode-toggle";
 import { MAX_PROMPT_LENGTH } from "@/lib/constants";
@@ -14,8 +15,8 @@ interface PromptInputProps {
 }
 
 const PLACEHOLDER_EXAMPLES: Record<GenerationMode, string> = {
-  roadmap: "e.g., Learn Full-Stack TypeScript development from scratch in 3 months...",
-  todo: "e.g., Actionable checklist to launch an MVP web app on Vercel...",
+  roadmap: "e.g., Master Full-Stack TypeScript development in 3 months...",
+  todo: "e.g., Comprehensive checklist to launch an MVP on Vercel...",
 };
 
 const SUGGESTIONS: { label: string; mode: GenerationMode; prompt: string }[] = [
@@ -37,10 +38,16 @@ const SUGGESTIONS: { label: string; mode: GenerationMode; prompt: string }[] = [
 ];
 
 export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
+  const { data: session } = useSession();
   const [prompt, setPrompt] = useState("");
   const [mode, setMode] = useState<GenerationMode>("roadmap");
 
   const handleSubmit = () => {
+    if (!session?.user) {
+      signIn("google");
+      return;
+    }
+
     if (!prompt.trim() || isLoading) return;
     onSubmit(prompt.trim(), mode);
   };
@@ -54,6 +61,7 @@ export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
 
   const charCount = prompt.length;
   const isOverLimit = charCount > MAX_PROMPT_LENGTH;
+  const isAuthenticated = Boolean(session?.user);
 
   return (
     <section className="w-full max-w-2xl mx-auto space-y-4">
@@ -61,7 +69,7 @@ export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
         <ModeToggle mode={mode} onModeChange={setMode} />
       </div>
 
-      <div className="relative rounded-2xl border border-slate-200/90 bg-white p-2 shadow-sm transition-all focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900/90 dark:focus-within:border-indigo-400">
+      <div className="relative rounded-2xl border border-slate-200 bg-white p-2 shadow-xs transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15 dark:border-slate-800 dark:bg-slate-900/90 dark:focus-within:border-blue-500">
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
@@ -81,27 +89,44 @@ export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
             {charCount}/{MAX_PROMPT_LENGTH}
           </span>
 
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isLoading || !prompt.trim() || isOverLimit}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-xs shadow-indigo-500/25 transition-all hover:opacity-95 hover:shadow-indigo-500/35 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>Crafting Plan...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Generate {mode === "roadmap" ? "Roadmap" : "Todo"}</span>
-                <CornerDownLeft className="h-3 w-3 opacity-60 ml-0.5 hidden sm:inline" />
-              </>
-            )}
-          </button>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading || !prompt.trim() || isOverLimit}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs shadow-blue-600/20 transition-all hover:bg-blue-700 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Generate {mode === "roadmap" ? "Roadmap" : "Todo"}</span>
+                  <CornerDownLeft className="h-3 w-3 opacity-70 ml-0.5 hidden sm:inline" />
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => signIn("google")}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs shadow-blue-600/20 transition-all hover:bg-blue-700"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              <span>Sign in with Google to Generate</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {!isAuthenticated && (
+        <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+          Sign in required to generate and save plans directly to your cloud database.
+        </p>
+      )}
 
       {/* Quick suggestions */}
       <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
@@ -114,7 +139,7 @@ export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
               setMode(item.mode);
               setPrompt(item.prompt);
             }}
-            className="rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 text-[11px] font-medium text-slate-600 transition-all hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:text-indigo-300"
+            className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-[11px] font-medium text-slate-600 transition-all hover:border-blue-400 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-blue-600 dark:hover:text-blue-400"
           >
             {item.label}
           </button>

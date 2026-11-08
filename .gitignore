@@ -51,3 +51,5 @@ coverage/
 # Misc
 *.log
 
+CONTEXT.md
+AGENTS.md

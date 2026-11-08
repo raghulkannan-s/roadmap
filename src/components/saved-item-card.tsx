@@ -26,13 +26,13 @@ export function SavedItemCard({ item, type, onDelete }: SavedItemCardProps) {
   const detailHref = isRoadmap ? `/roadmap/${item.id}` : `/todo/${item.id}`;
 
   return (
-    <div className="group flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-xs backdrop-blur-xs transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800/90 dark:bg-slate-900/70 dark:hover:border-indigo-700/80">
+    <div className="group flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-xs backdrop-blur-xs transition-all hover:border-blue-300 hover:shadow-md dark:border-slate-800/90 dark:bg-slate-900/70 dark:hover:border-blue-600/80">
       <div>
         <div className="flex items-center justify-between gap-2">
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
               isRoadmap
-                ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
                 : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
             }`}
           >
@@ -50,7 +50,7 @@ export function SavedItemCard({ item, type, onDelete }: SavedItemCardProps) {
         </div>
 
         <Link href={detailHref} className="mt-3 block">
-          <h3 className="line-clamp-1 text-base font-bold text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+          <h3 className="line-clamp-1 text-base font-bold text-slate-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
             {item.title}
           </h3>
           <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{item.description}</p>
@@ -67,7 +67,7 @@ export function SavedItemCard({ item, type, onDelete }: SavedItemCardProps) {
           </div>
           <Link
             href={detailHref}
-            className="flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+            className="flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
             <span>{itemCount} items</span>
             <ChevronRight className="h-3 w-3" />

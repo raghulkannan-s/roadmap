@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
+import { auth } from "@/auth";
 import { getSystemPrompt } from "@/lib/prompts";
 
 import type { GenerateRequest } from "@/lib/types";
@@ -9,6 +10,15 @@ const MAX_PROMPT_LENGTH = 500;
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required. Please sign in with Google to generate plans." },
+        { status: 401 }
+      );
+    }
+
     const body = (await request.json()) as GenerateRequest;
 
     if (!body.prompt || typeof body.prompt !== "string") {
@@ -62,7 +72,6 @@ export async function POST(request: Request) {
 
     const responseText = result.response.text();
 
-    // Gemini sometimes wraps JSON in markdown code fences, so we strip them
     const cleanJson = responseText
       .replace(/```json?\n?/g, "")
       .replace(/```/g, "")
@@ -85,4 +94,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

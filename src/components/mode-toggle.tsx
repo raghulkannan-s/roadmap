@@ -13,7 +13,7 @@ interface ModeToggleProps {
 
 export function ModeToggle({ mode, onModeChange }: ModeToggleProps) {
   return (
-    <div className="flex rounded-xl border border-slate-200/90 bg-slate-100/80 p-1 shadow-inner dark:border-slate-800 dark:bg-slate-900/90">
+    <div className="flex rounded-xl border border-slate-200 bg-slate-100/80 p-1 shadow-inner dark:border-slate-800 dark:bg-slate-900/90">
       <button
         type="button"
         onClick={() => onModeChange("roadmap")}
@@ -24,7 +24,7 @@ export function ModeToggle({ mode, onModeChange }: ModeToggleProps) {
             : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
         )}
       >
-        <Map className="h-3.5 w-3.5 text-indigo-500" />
+        <Map className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
         <span>Roadmap</span>
       </button>
       <button
@@ -37,7 +37,7 @@ export function ModeToggle({ mode, onModeChange }: ModeToggleProps) {
             : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
         )}
       >
-        <CheckSquare className="h-3.5 w-3.5 text-emerald-500" />
+        <CheckSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
         <span>Todo List</span>
       </button>
     </div>
