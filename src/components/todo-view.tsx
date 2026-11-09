@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession, signIn } from "next-auth/react";
-import { Save, RotateCcw, ArrowLeft, Check, Cloud } from "lucide-react";
+import { RotateCcw, ArrowLeft, Check, Cloud } from "lucide-react";
 
 import { CategoryGroup } from "./category-group";
 import { ProgressBar } from "./progress-bar";
@@ -12,7 +11,6 @@ import type { TodoList, Category } from "@/lib/types";
 
 interface TodoViewProps {
   data: Omit<TodoList, "createdAt" | "prompt"> & { id?: string; createdAt?: string };
-  prompt?: string;
   onBack: () => void;
   onRegenerate?: () => void;
   isRegenerating?: boolean;
@@ -20,16 +18,12 @@ interface TodoViewProps {
 
 export function TodoView({
   data,
-  prompt = "",
   onBack,
   onRegenerate,
   isRegenerating = false,
 }: TodoViewProps) {
-  const { data: session } = useSession();
   const [categories, setCategories] = useState<Category[]>(data.categories);
-  const [currentId, setCurrentId] = useState<string | undefined>(data.id);
-  const [isSaved, setIsSaved] = useState(Boolean(data.id));
-  const [isSaving, setIsSaving] = useState(false);
+  const currentId = data.id;
 
   const allTasks = categories.flatMap((cat) => cat.tasks);
   const overallProgress = calculateProgress(allTasks);
@@ -48,7 +42,7 @@ export function TodoView({
 
     setCategories(updated);
 
-    if (currentId && session?.user) {
+    if (currentId) {
       try {
         await fetch(`/api/todos/${currentId}`, {
           method: "PATCH",
@@ -58,49 +52,6 @@ export function TodoView({
       } catch (err) {
         console.error("Failed to sync task toggle to cloud:", err);
       }
-    } else {
-      setIsSaved(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!session?.user) {
-      signIn("google");
-      return;
-    }
-
-    setIsSaving(true);
-
-    try {
-      if (currentId) {
-        await fetch(`/api/todos/${currentId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ categories }),
-        });
-        setIsSaved(true);
-      } else {
-        const res = await fetch("/api/todos", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: data.title,
-            description: data.description,
-            categories,
-            prompt,
-          }),
-        });
-
-        const json = await res.json();
-        if (json.success && json.data?.id) {
-          setCurrentId(json.data.id);
-          setIsSaved(true);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to save todo list to cloud:", err);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -128,20 +79,11 @@ export function TodoView({
       <ProgressBar percentage={overallProgress} />
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isSaved || isSaving}
-          className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-all hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSaved ? (
-            <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          ) : (
-            <Save className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          )}
-          <span>{isSaving ? "Saving to Cloud..." : isSaved ? "Saved to Cloud" : "Save to Cloud"}</span>
-          <Cloud className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 ml-0.5" />
-        </button>
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+          <Check className="h-4 w-4" />
+          <span>Saved to Cloud</span>
+          <Cloud className="h-3.5 w-3.5 ml-0.5" />
+        </div>
         {onRegenerate && (
           <button
             type="button"

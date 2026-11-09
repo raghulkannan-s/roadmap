@@ -80,7 +80,6 @@ export function TodoDetailClient({ id, initialData }: TodoDetailClientProps) {
     <main className="flex-1 py-8 px-4 sm:px-6">
       <TodoView
         data={todo}
-        prompt={todo.prompt}
         onBack={() => router.push("/")}
       />
     </main>

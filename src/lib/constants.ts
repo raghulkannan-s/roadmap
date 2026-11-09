@@ -1,5 +1,4 @@
 export const STORAGE_KEYS = {
-  ROADMAPS: "roadmap_items",
   TODOS: "todo_items",
 } as const;
 

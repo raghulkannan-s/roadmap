@@ -1,35 +1,3 @@
-// ===== GENERATION MODES =====
-
-export type GenerationMode = "roadmap" | "todo";
-
-// ===== ROADMAP =====
-
-export interface Milestone {
-  id: string;
-  title: string;
-  description: string;
-  isCompleted: boolean;
-}
-
-export interface Phase {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  order: number;
-  milestones: Milestone[];
-}
-
-export interface Roadmap {
-  id: string;
-  title: string;
-  description: string;
-  estimatedDuration: string;
-  phases: Phase[];
-  createdAt: string;
-  prompt: string;
-}
-
 // ===== TODO =====
 
 export interface Task {
@@ -55,11 +23,20 @@ export interface TodoList {
   prompt: string;
 }
 
+export interface GenerationFallback {
+  status: "fallback";
+  message: string;
+  title: string;
+  description: string;
+  categories: [];
+}
+
+export type GeneratedTodo = (TodoList & { status: "success"; message: string }) | GenerationFallback;
+
 // ===== API =====
 
 export interface GenerateRequest {
   prompt: string;
-  mode: GenerationMode;
 }
 
 export interface ApiSuccessResponse<T> {
@@ -73,4 +50,3 @@ export interface ApiErrorResponse {
 }
 
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
-

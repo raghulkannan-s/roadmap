@@ -3,33 +3,30 @@
 import { createContext, useContext, useState, useCallback } from "react";
 
 import type { ReactNode } from "react";
-import type { GenerationMode, Roadmap, TodoList } from "@/lib/types";
+import type { GeneratedTodo } from "@/lib/types";
+import { GenerationErrorToast } from "@/components/generation-error-toast";
 
 interface GenerationContextValue {
-  result: Roadmap | TodoList | null;
-  mode: GenerationMode;
+  result: GeneratedTodo | null;
   prompt: string;
   isLoading: boolean;
   error: string | null;
-  setMode: (mode: GenerationMode) => void;
   setPrompt: (prompt: string) => void;
-  generate: (customPrompt?: string, customMode?: GenerationMode) => Promise<void>;
+  generate: (customPrompt?: string) => Promise<void>;
   clearResult: () => void;
 }
 
 const GenerationContext = createContext<GenerationContextValue | null>(null);
 
 export function GenerationProvider({ children }: { children: ReactNode }) {
-  const [result, setResult] = useState<Roadmap | TodoList | null>(null);
-  const [mode, setMode] = useState<GenerationMode>("roadmap");
+  const [result, setResult] = useState<GeneratedTodo | null>(null);
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const generate = useCallback(
-    async (customPrompt?: string, customMode?: GenerationMode) => {
+    async (customPrompt?: string) => {
       const targetPrompt = (customPrompt ?? prompt).trim();
-      const targetMode = customMode ?? mode;
 
       if (!targetPrompt) {
         setError("Please enter a prompt.");
@@ -37,7 +34,6 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
       }
 
       if (customPrompt !== undefined) setPrompt(customPrompt);
-      if (customMode !== undefined) setMode(customMode);
 
       setIsLoading(true);
       setError(null);
@@ -47,7 +43,7 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
         const response = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: targetPrompt, mode: targetMode }),
+          body: JSON.stringify({ prompt: targetPrompt }),
         });
 
         const json = await response.json();
@@ -58,6 +54,9 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
         }
 
         setResult(json.data);
+        if (json.data.status === "fallback" && json.data.message) {
+          setError(json.data.message);
+        }
       } catch (err) {
         console.error("[Generation] Request failed:", err);
         setError("Network error. Please check your connection and try again.");
@@ -65,7 +64,7 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     },
-    [prompt, mode]
+    [prompt]
   );
 
   const clearResult = useCallback(() => {
@@ -73,21 +72,26 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
     setError(null);
   }, []);
 
+  const dismissError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return (
     <GenerationContext.Provider
       value={{
         result,
-        mode,
         prompt,
         isLoading,
         error,
-        setMode,
         setPrompt,
         generate,
         clearResult,
       }}
     >
       {children}
+      {error && (
+        <GenerationErrorToast message={error} onClose={dismissError} />
+      )}
     </GenerationContext.Provider>
   );
 }

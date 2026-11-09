@@ -2,7 +2,7 @@
 
 # 🗺️ RoadmapAI
 
-**Transform high-level goals into phased roadmaps and prioritized task lists using AI.**
+**Transform high-level goals into prioritized todo lists using AI.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.3-2563eb?style=for-the-badge&logo=react)](https://react.dev/)
@@ -25,18 +25,18 @@
 **RoadmapAI** is an AI-powered project planning and task orchestration platform. When planning complex ventures — whether learning a new technical stack, launching a software product, or preparing for interviews — developers and planners often struggle with breaking monolithic goals into structured, actionable phases.
 
 RoadmapAI solves this by pairing Google's **Gemini AI Engine** with strict structured JSON schemas:
-1. **Interactive Phased Roadmaps**: Groups goals into sequential phases, milestones, and estimated durations.
-2. **Prioritized Todo Workspaces**: Generates categorized task lists with High, Medium, and Low priorities.
-3. **Cloud Native Storage**: Connects directly to **PostgreSQL / Neon Serverless DB** with Google OAuth 2.0.
+1. **Prioritized Todo Workspaces**: Generates categorized task lists with High, Medium, and Low priorities.
+2. **Automatic Cloud Saving**: Saves every generated todo list directly to **PostgreSQL / Neon Serverless DB**.
+3. **Google OAuth 2.0**: Protects generation and cloud data per user account.
 4. **Solid Classy Palette & Theming**: Polished executive blue design with full **Dark & Light Mode** support.
 
 ---
 
 ## ✨ Key Features
 
-- 🧠 **AI Plan Generation**: Converts natural language prompts into fully typed, structured plans using `gemini-2.0-flash`.
+- 🧠 **AI Plan Generation**: Converts natural language prompts into fully typed, structured plans using `gemini-3.5-flash-lite`.
 - 🔐 **Google OAuth 2.0 Guard**: Authentication via **Auth.js (NextAuth v5)** required before generation, ensuring your plans are tied to your account.
-- 🐘 **Serverless Cloud Storage (Neon / PostgreSQL)**: Plans, milestone statuses, and task completions sync directly to the database via Prisma ORM.
+- 🐘 **Serverless Cloud Storage (Neon / PostgreSQL)**: Todo lists and task completions sync directly to the database via Prisma ORM.
 - 🌓 **Classy Dark & Light Modes**: System-aware theme toggle with zero hydration flicker using `next-themes` and a tailored solid blue palette.
 - 📊 **Real-time Progress Calculation**: Dynamic percentage indicators that update instantly across milestones and categories.
 - ⚡ **Zero-Latency Interactions**: Optimistic client updates with automatic server synchronization.
@@ -58,14 +58,13 @@ flowchart TD
     subgraph Server["⚡ Next.js App Router (Server-Side)"]
         AuthRoute["/api/auth/[...nextauth]"]
         GenRoute["/api/generate (Protected via auth)"]
-        RoadmapRoute["/api/roadmaps & /api/roadmaps/[id]"]
         TodoRoute["/api/todos & /api/todos/[id]"]
         PrismaClient["Prisma ORM Client Singleton"]
     end
 
     subgraph External["🌐 Cloud & AI Services"]
         GoogleAuth["Google OAuth 2.0 Provider"]
-        GeminiAI["Google Gemini API (gemini-2.0-flash)"]
+        GeminiAI["Google Gemini API (gemini-3.5-flash-lite)"]
         NeonDB[("🐘 Neon Serverless PostgreSQL / Local Postgres")]
     end
 
@@ -77,9 +76,7 @@ flowchart TD
     GeminiAI --> GenRoute
     GenRoute --> State
 
-    UI --> RoadmapRoute
     UI --> TodoRoute
-    RoadmapRoute --> PrismaClient
     TodoRoute --> PrismaClient
     AuthRoute --> PrismaClient
     PrismaClient --> NeonDB
@@ -87,10 +84,10 @@ flowchart TD
 
 ### Request Flow
 1. **Authentication Check**: User connects via Google OAuth. Session token is verified with Auth.js JWT strategy.
-2. **Prompt Dispatch**: The user inputs a prompt and selects a mode (`roadmap` or `todo`).
+2. **Prompt Dispatch**: The user submits a goal or project prompt.
 3. **Structured System Instruction**: Server formats prompt with schema rules and forwards to Gemini AI.
 4. **JSON Parsing & Validation**: Cleaned, typed JSON response is returned to the client.
-5. **Database Persistence**: The user saves or checks items; the application calls `/api/roadmaps` or `/api/todos` to persist in PostgreSQL.
+5. **Database Persistence**: The generation endpoint saves the generated todo list automatically in PostgreSQL.
 
 ---
 
@@ -100,7 +97,6 @@ flowchart TD
 erDiagram
     User ||--o{ Account : "has many"
     User ||--o{ Session : "has many"
-    User ||--o{ Roadmap : "owns"
     User ||--o{ TodoList : "owns"
 
     User {
@@ -129,18 +125,6 @@ erDiagram
         String sessionToken UK
         String userId FK
         DateTime expires
-    }
-
-    Roadmap {
-        String id PK
-        String userId FK
-        String title
-        String description
-        String estimatedDuration
-        Json phases
-        String prompt
-        DateTime createdAt
-        DateTime updatedAt
     }
 
     TodoList {
@@ -200,6 +184,14 @@ AUTH_GOOGLE_SECRET="your-client-secret"
 > **Google OAuth Configuration**:
 > Set your **Authorized Redirect URI** in Google Cloud Console to:
 > `http://localhost:3000/api/auth/callback/google`
+>
+> Auth.js handles the OAuth callback and redirects the user back to the page
+> where sign-in was started. Do not use `/login/oauth2/code/google` or add a
+> separate frontend redirect variable; those paths are not used by this app.
+>
+> When opening the app from another device on your LAN, set `AUTH_URL` to the
+> LAN URL (for example, `http://192.168.1.36:3000`) and add the matching
+> `/api/auth/callback/google` URL in Google Cloud Console.
 
 ### 4. Push Database Schema
 Sync your database with Prisma schema:
@@ -230,11 +222,8 @@ roadmap/
     │   ├── api/
     │   │   ├── auth/[...nextauth]/route.ts  # NextAuth OAuth handler
     │   │   ├── generate/route.ts            # Protected Gemini AI generation endpoint
-    │   │   ├── roadmaps/route.ts            # Roadmaps collection CRUD
-    │   │   ├── roadmaps/[id]/route.ts       # Single roadmap operations
     │   │   ├── todos/route.ts               # Todos collection CRUD
     │   │   └── todos/[id]/route.ts          # Single todo operations
-    │   ├── roadmap/[id]/page.tsx            # Server-streamed roadmap detail view
     │   ├── todo/[id]/page.tsx               # Server-streamed todo detail view
     │   ├── layout.tsx                       # Root layout with Theme & Auth providers
     │   ├── page.tsx                         # Main Dashboard
@@ -246,9 +235,7 @@ roadmap/
     │   ├── theme-toggle.tsx      # Dark / Light mode toggle
     │   ├── header.tsx            # Sticky navigation bar
     │   ├── prompt-input.tsx      # Generation input with auth lock
-    │   ├── mode-toggle.tsx       # Roadmap / Todo segmented control
-    │   ├── roadmap-view.tsx      # Interactive roadmap with Cloud Save
-    │   ├── todo-view.tsx         # Interactive todo with Cloud Save
+    │   ├── todo-view.tsx         # Interactive todo with automatic cloud save
     │   ├── saved-items-list.tsx  # Cloud-synced plans dashboard
     │   └── saved-item-card.tsx   # Plan summary card
     ├── context/
@@ -271,7 +258,7 @@ roadmap/
 | **UI Library** | React 19.3 | Latest React features, modern hooks |
 | **Styling** | Tailwind CSS v4 | Zero-runtime CSS, modern `@variant dark` system |
 | **Theming** | next-themes | SSR-safe, flicker-free Light & Dark theme switching |
-| **AI Model** | Google Gemini (`gemini-2.0-flash`) | Fast inference, structured JSON output |
+| **AI Model** | Google Gemini (`gemini-3.5-flash-lite`) | Lightweight flash inference, structured JSON output |
 | **Authentication** | Auth.js (NextAuth v5) | Secure OAuth 2.0 integration with JWT sessions |
 | **ORM** | Prisma 6.19 | Fully typed database client with PostgreSQL adapter |
 | **Database** | Neon Serverless PostgreSQL | Autoscaling serverless database with instant branching |

@@ -19,9 +19,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RoadmapAI — Next-Gen AI Roadmap & Todo Studio",
+  title: "RoadmapAI — AI Todo Studio",
   description:
-    "Generate structured, actionable roadmaps and categorized todo lists using AI. Track your progress with interactive timelines, local persistence, and cloud sync.",
+    "Generate structured, actionable todo lists using AI and save them securely to the cloud.",
 };
 
 export default function RootLayout({

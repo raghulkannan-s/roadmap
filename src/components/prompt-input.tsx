@@ -4,35 +4,26 @@ import { useState } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { Sparkles, Loader2, CornerDownLeft, Lock } from "lucide-react";
 
-import { ModeToggle } from "./mode-toggle";
 import { MAX_PROMPT_LENGTH } from "@/lib/constants";
 
-import type { GenerationMode } from "@/lib/types";
-
 interface PromptInputProps {
-  onSubmit: (prompt: string, mode: GenerationMode) => void;
+  onSubmit: (prompt: string) => void;
   isLoading: boolean;
 }
 
-const PLACEHOLDER_EXAMPLES: Record<GenerationMode, string> = {
-  roadmap: "e.g., Master Full-Stack TypeScript development in 3 months...",
-  todo: "e.g., Comprehensive checklist to launch an MVP on Vercel...",
-};
+const PLACEHOLDER = "e.g., Comprehensive checklist to launch an MVP on Vercel...";
 
-const SUGGESTIONS: { label: string; mode: GenerationMode; prompt: string }[] = [
+const SUGGESTIONS: { label: string; prompt: string }[] = [
   {
     label: "🚀 Launch MVP in 4 Weeks",
-    mode: "roadmap",
     prompt: "Launch a production-ready SaaS MVP in 4 weeks including auth, billing, and landing page",
   },
   {
     label: "💻 Master React 19 & Next.js",
-    mode: "roadmap",
     prompt: "Master modern React 19, Next.js App Router, Server Actions, and Tailwind CSS in 6 weeks",
   },
   {
     label: "📋 Launch Day Checklist",
-    mode: "todo",
     prompt: "Comprehensive launch day checklist for a web app: SEO, performance, analytics, legal, and social",
   },
 ];
@@ -40,7 +31,6 @@ const SUGGESTIONS: { label: string; mode: GenerationMode; prompt: string }[] = [
 export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
   const { data: session } = useSession();
   const [prompt, setPrompt] = useState("");
-  const [mode, setMode] = useState<GenerationMode>("roadmap");
 
   const handleSubmit = () => {
     if (!session?.user) {
@@ -49,7 +39,7 @@ export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
     }
 
     if (!prompt.trim() || isLoading) return;
-    onSubmit(prompt.trim(), mode);
+    onSubmit(prompt.trim());
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -65,16 +55,12 @@ export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
 
   return (
     <section className="w-full max-w-2xl mx-auto space-y-4">
-      <div className="flex justify-center">
-        <ModeToggle mode={mode} onModeChange={setMode} />
-      </div>
-
       <div className="relative rounded-2xl border border-slate-200 bg-white p-2 shadow-xs transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15 dark:border-slate-800 dark:bg-slate-900/90 dark:focus-within:border-blue-500">
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={PLACEHOLDER_EXAMPLES[mode]}
+          placeholder={PLACEHOLDER}
           rows={3}
           disabled={isLoading}
           className="w-full resize-none bg-transparent px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-500 disabled:opacity-50"
@@ -104,7 +90,7 @@ export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
               ) : (
                 <>
                   <Sparkles className="h-3.5 w-3.5" />
-                  <span>Generate {mode === "roadmap" ? "Roadmap" : "Todo"}</span>
+                  <span>Generate Todo List</span>
                   <CornerDownLeft className="h-3 w-3 opacity-70 ml-0.5 hidden sm:inline" />
                 </>
               )}
@@ -136,7 +122,6 @@ export function PromptInput({ onSubmit, isLoading }: PromptInputProps) {
             key={idx}
             type="button"
             onClick={() => {
-              setMode(item.mode);
               setPrompt(item.prompt);
             }}
             className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-[11px] font-medium text-slate-600 transition-all hover:border-blue-400 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-blue-600 dark:hover:text-blue-400"

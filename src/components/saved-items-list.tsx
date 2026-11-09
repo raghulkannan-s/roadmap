@@ -6,9 +6,7 @@ import { FolderKanban, Plus, Lock, Cloud, RefreshCw } from "lucide-react";
 
 import { SavedItemCard } from "./saved-item-card";
 
-import type { Roadmap, TodoList } from "@/lib/types";
-
-type FilterTab = "all" | "roadmap" | "todo";
+import type { TodoList } from "@/lib/types";
 
 interface SavedItemsListProps {
   onNewPlanClick?: () => void;
@@ -16,27 +14,16 @@ interface SavedItemsListProps {
 
 export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
   const { data: session } = useSession();
-  const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
   const [todos, setTodos] = useState<TodoList[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [filter, setFilter] = useState<FilterTab>("all");
 
   const refreshCloudItems = useCallback(async () => {
     if (!session?.user) return;
     setIsLoading(true);
 
     try {
-      const [roadmapsRes, todosRes] = await Promise.all([
-        fetch("/api/roadmaps"),
-        fetch("/api/todos"),
-      ]);
-
-      const [roadmapsData, todosData] = await Promise.all([
-        roadmapsRes.json(),
-        todosRes.json(),
-      ]);
-
-      if (roadmapsData.success) setRoadmaps(roadmapsData.data);
+      const todosRes = await fetch("/api/todos");
+      const todosData = await todosRes.json();
       if (todosData.success) setTodos(todosData.data);
     } catch (err) {
       console.error("Failed to refresh cloud items:", err);
@@ -49,13 +36,10 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
     let ignore = false;
     if (!session?.user) return;
 
-    Promise.all([
-      fetch("/api/roadmaps").then((r) => r.json()),
-      fetch("/api/todos").then((r) => r.json()),
-    ])
-      .then(([roadmapsData, todosData]) => {
+    fetch("/api/todos")
+      .then((r) => r.json())
+      .then((todosData) => {
         if (!ignore) {
-          if (roadmapsData.success) setRoadmaps(roadmapsData.data);
           if (todosData.success) setTodos(todosData.data);
         }
       })
@@ -68,17 +52,12 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
     };
   }, [session?.user]);
 
-  const handleDelete = async (id: string, type: "roadmap" | "todo") => {
-    if (type === "roadmap") {
-      setRoadmaps((prev) => prev.filter((r) => r.id !== id));
-      await fetch(`/api/roadmaps/${id}`, { method: "DELETE" }).catch(() => {});
-    } else {
-      setTodos((prev) => prev.filter((t) => t.id !== id));
-      await fetch(`/api/todos/${id}`, { method: "DELETE" }).catch(() => {});
-    }
+  const handleDelete = async (id: string) => {
+    setTodos((prev) => prev.filter((t) => t.id !== id));
+    await fetch(`/api/todos/${id}`, { method: "DELETE" }).catch(() => {});
   };
 
-  const totalCount = roadmaps.length + todos.length;
+  const totalCount = todos.length;
 
   return (
     <section id="saved-items" className="w-full max-w-4xl mx-auto space-y-6 pt-10">
@@ -112,26 +91,6 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
               <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
             </button>
 
-            <div className="flex items-center gap-1.5 self-start sm:self-auto rounded-xl border border-slate-200/80 bg-slate-100/80 p-1 text-xs font-semibold dark:border-slate-800 dark:bg-slate-900/80">
-              {(["all", "roadmap", "todo"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setFilter(tab)}
-                  className={`rounded-lg px-3 py-1 capitalize transition-all ${
-                    filter === tab
-                      ? "bg-white text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
-                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                  }`}
-                >
-                  {tab === "all"
-                    ? `All (${totalCount})`
-                    : tab === "roadmap"
-                    ? `Roadmaps (${roadmaps.length})`
-                    : `Todos (${todos.length})`}
-                </button>
-              ))}
-            </div>
           </div>
         )}
       </div>
@@ -145,7 +104,7 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
             Sign in to access your cloud plans
           </h3>
           <p className="mt-1 text-xs text-slate-500 max-w-sm dark:text-slate-400">
-            Connect your Google account to view, track, and sync all your generated roadmaps and todo lists in the cloud.
+            Connect your Google account to view, track, and sync all your generated todo lists in the cloud.
           </p>
           <button
             type="button"
@@ -173,7 +132,7 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
             No saved plans in the cloud yet
           </h3>
           <p className="mt-1 text-xs text-slate-500 max-w-xs dark:text-slate-400">
-            Generate your first roadmap or todo list using AI above and hit Save to sync it to your database.
+            Generate your first todo list using AI above. It will be saved automatically to your database.
           </p>
           {onNewPlanClick && (
             <button
@@ -188,14 +147,9 @@ export function SavedItemsList({ onNewPlanClick }: SavedItemsListProps) {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {(filter === "all" || filter === "roadmap") &&
-            roadmaps.map((item) => (
-              <SavedItemCard key={item.id} item={item} type="roadmap" onDelete={handleDelete} />
-            ))}
-          {(filter === "all" || filter === "todo") &&
-            todos.map((item) => (
-              <SavedItemCard key={item.id} item={item} type="todo" onDelete={handleDelete} />
-            ))}
+          {todos.map((item) => (
+            <SavedItemCard key={item.id} item={item} onDelete={handleDelete} />
+          ))}
         </div>
       )}
     </section>

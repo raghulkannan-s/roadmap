@@ -1,47 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { Trash2, Map, CheckSquare, Calendar, ChevronRight } from "lucide-react";
+import { Trash2, CheckSquare, Calendar, ChevronRight } from "lucide-react";
 
 import { ProgressBar } from "./progress-bar";
 import { formatDate, calculateProgress } from "@/lib/utils";
 
-import type { Roadmap, TodoList } from "@/lib/types";
+import type { TodoList } from "@/lib/types";
 
 interface SavedItemCardProps {
-  item: Roadmap | TodoList;
-  type: "roadmap" | "todo";
-  onDelete: (id: string, type: "roadmap" | "todo") => void;
+  item: TodoList;
+  onDelete: (id: string) => void;
 }
 
-export function SavedItemCard({ item, type, onDelete }: SavedItemCardProps) {
-  const isRoadmap = type === "roadmap";
-  const roadmap = isRoadmap ? (item as Roadmap) : null;
-  const todo = !isRoadmap ? (item as TodoList) : null;
-
-  const milestones = roadmap?.phases.flatMap((p) => p.milestones) ?? [];
-  const tasks = todo?.categories.flatMap((c) => c.tasks) ?? [];
-  const progress = calculateProgress(isRoadmap ? milestones : tasks);
-  const itemCount = isRoadmap ? milestones.length : tasks.length;
-  const detailHref = isRoadmap ? `/roadmap/${item.id}` : `/todo/${item.id}`;
+export function SavedItemCard({ item, onDelete }: SavedItemCardProps) {
+  const tasks = item.categories.flatMap((c) => c.tasks);
+  const progress = calculateProgress(tasks);
+  const itemCount = tasks.length;
+  const detailHref = `/todo/${item.id}`;
 
   return (
     <div className="group flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-xs backdrop-blur-xs transition-all hover:border-blue-300 hover:shadow-md dark:border-slate-800/90 dark:bg-slate-900/70 dark:hover:border-blue-600/80">
       <div>
         <div className="flex items-center justify-between gap-2">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-              isRoadmap
-                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
-                : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
-            }`}
-          >
-            {isRoadmap ? <Map className="h-3 w-3" /> : <CheckSquare className="h-3 w-3" />}
-            <span>{isRoadmap ? "Roadmap" : "Todo"}</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+            <CheckSquare className="h-3 w-3" />
+            <span>Todo List</span>
           </span>
           <button
             type="button"
-            onClick={() => onDelete(item.id, type)}
+            onClick={() => onDelete(item.id)}
             aria-label="Delete item"
             className="rounded-lg p-1 text-slate-400 opacity-60 transition-all hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 group-hover:opacity-100"
           >

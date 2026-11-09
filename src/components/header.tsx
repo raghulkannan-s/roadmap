@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, Map } from "lucide-react";
+import { Sparkles, CheckSquare } from "lucide-react";
 
 import { AuthButton } from "./auth-button";
 import { ThemeToggle } from "./theme-toggle";
@@ -36,8 +36,8 @@ export function Header() {
             href="#saved-items"
             className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
-            <Map className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-            <span>Saved Plans</span>
+            <CheckSquare className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+            <span>Saved Todos</span>
           </a>
 
           <ThemeToggle />

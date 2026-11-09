@@ -1,11 +1,8 @@
 import { STORAGE_KEYS } from "./constants";
 
-import type { Roadmap, TodoList } from "./types";
+import type { TodoList } from "./types";
 
-const STORAGE_EVENT = "roadmap_storage_change";
-
-let lastRoadmapsRaw: string | null = null;
-let lastRoadmapsParsed: Roadmap[] = [];
+const STORAGE_EVENT = "todo_storage_change";
 
 let lastTodosRaw: string | null = null;
 let lastTodosParsed: TodoList[] = [];
@@ -24,66 +21,6 @@ export function subscribeToStorage(callback: () => void): () => void {
     window.removeEventListener(STORAGE_EVENT, callback);
     window.removeEventListener("storage", callback);
   };
-}
-
-// ===== ROADMAPS =====
-
-export function getRoadmaps(): Roadmap[] {
-  if (typeof window === "undefined") return [];
-
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.ROADMAPS);
-    if (raw === lastRoadmapsRaw) return lastRoadmapsParsed;
-    lastRoadmapsRaw = raw;
-    lastRoadmapsParsed = raw ? (JSON.parse(raw) as Roadmap[]) : [];
-    return lastRoadmapsParsed;
-  } catch (error) {
-    console.error("[Storage] Failed to read roadmaps:", error);
-    return [];
-  }
-}
-
-export function saveRoadmap(roadmap: Roadmap): void {
-  const items = getRoadmaps();
-  const updated = [roadmap, ...items];
-  try {
-    localStorage.setItem(STORAGE_KEYS.ROADMAPS, JSON.stringify(updated));
-    dispatchStorageChange();
-  } catch (error) {
-    console.error("[Storage] Failed to save roadmap:", error);
-  }
-}
-
-export function getRoadmapById(id: string): Roadmap | null {
-  const items = getRoadmaps();
-  return items.find((item) => item.id === id) ?? null;
-}
-
-export function updateRoadmap(id: string, updates: Partial<Roadmap>): void {
-  const items = getRoadmaps();
-  const index = items.findIndex((item) => item.id === id);
-
-  if (index === -1) return;
-
-  const updated = [...items];
-  updated[index] = { ...updated[index], ...updates };
-
-  try {
-    localStorage.setItem(STORAGE_KEYS.ROADMAPS, JSON.stringify(updated));
-    dispatchStorageChange();
-  } catch (error) {
-    console.error("[Storage] Failed to update roadmap:", error);
-  }
-}
-
-export function deleteRoadmap(id: string): void {
-  const items = getRoadmaps().filter((item) => item.id !== id);
-  try {
-    localStorage.setItem(STORAGE_KEYS.ROADMAPS, JSON.stringify(items));
-    dispatchStorageChange();
-  } catch (error) {
-    console.error("[Storage] Failed to delete roadmap:", error);
-  }
 }
 
 // ===== TODOS =====
